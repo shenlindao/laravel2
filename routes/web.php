@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\Auth\RegisteredUserController;
 use Illuminate\Support\Facades\Route;
+use Telegram\Bot\Api;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,6 +21,22 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('home');
 })->middleware('auth');
+
+
+Route::get('/home', [HomeController::class, 'index'])->name('home');
+
+Route::get('test-telegram', function () {
+    $telegram = new Api(env('TELEGRAM_BOT_API_KEY'));
+    $telegram->sendMessage([
+        'chat_id' => env('TELEGRAM_CHANNEL_ID'),
+        'parse_mode' => 'html',
+        'text' => 'Произошло тестовое событие'
+    ]);
+    
+    return response()->json([
+        'status' => 'success'
+    ]);
+});
 
 Route::get('/create', [UserController::class, 'create']);
 
@@ -40,6 +58,5 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
-Auth::routes();
-
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
+Route::post('/register', [RegisteredUserController::class, 'store']);
